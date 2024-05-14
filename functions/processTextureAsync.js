@@ -74,7 +74,7 @@ function delay(ms) {
 }
 
 function buildCommandLine(command, args) {
-    const commandLine = [command, ...args].join(' ');
+    const commandLine = [`\"${command}\"`, ...args].join(' ');
     return commandLine;
 }
 
