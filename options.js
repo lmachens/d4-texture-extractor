@@ -5,6 +5,7 @@ const options = {};
 
 function setOptions(opts) {
   options.extract = opts.extract;
+  options.storage = opts.storage || config.storage || "fenris";
   options.cascConsolePath = path.resolve("./CASCConsole/CASCConsole.exe");
   options.gameDataFolder = path.resolve("./gamedata");
   options.textureDataFolder = path.resolve("./gamedata/Base/meta/Texture");
