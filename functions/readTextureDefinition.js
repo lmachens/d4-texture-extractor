@@ -1,61 +1,38 @@
 const fs = require('fs');
+const path = require('path');
+const { options } = require('../options');
 
 function readTextureDefinition(filename) {
-  const buffer = fs.readFileSync(filename);
-  
+  // As of game version 2.5.0, texture definitions are read from d4data JSON files
+  // The filename is like "2DUIMinimapIcons.tex", so we look for "2DUIMinimapIcons.tex.json"
+  const jsonPath = path.join(options.d4dataTextureFolder, filename + '.json');
+  const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+
   const textureDefinition = {
-    eTexFormat: buffer.readUInt32LE(0xc + 16),
-    dwVolumeXSlices: buffer.readUInt16LE(0x10 + 16),
-    dwVolumeYSlices: buffer.readUInt16LE(0x12 + 16),
-    dwWidth: buffer.readUInt16LE(0x14 + 16),
-    dwHeight: buffer.readUInt16LE(0x16 + 16),
-    dwDepth: buffer.readUInt32LE(0x18 + 16),
-    dwFaceCount: buffer.readUInt8(0x1c + 16),
-    dwMipMapLevelMin: buffer.readUInt8(0x1d + 16),
-    dwMipMapLevelMax: buffer.readUInt8(0x1e + 16),
-    dwImportFlags: buffer.readUInt32LE(0x20 + 16),
-    rgbavalAvgColor: {
-      r: buffer.readFloatLE(0x28 + 16),
-      g: buffer.readFloatLE(0x2C + 16),
-      b: buffer.readFloatLE(0x30 + 16),
-      a: buffer.readFloatLE(0x34 + 16)
-    },
-    pHotspot: {
-      x: buffer.readInt16LE(0x38 + 16),
-      y: buffer.readInt16LE(0x3a + 16)
-    },
+    eTexFormat: data.eTexFormat,
+    dwVolumeXSlices: data.dwVolumeXSlices,
+    dwVolumeYSlices: data.dwVolumeYSlices,
+    dwWidth: data.dwWidth,
+    dwHeight: data.dwHeight,
+    dwDepth: data.dwDepth,
+    dwFaceCount: data.dwFaceCount,
+    dwMipMapLevelMin: data.dwMipMapLevelMin,
+    dwMipMapLevelMax: data.dwMipMapLevelMax,
+    dwImportFlags: data.dwImportFlags,
+    rgbavalAvgColor: data.rgbavalAvgColor || { r: 0, g: 0, b: 0, a: 0 },
+    pHotspot: data.pHotspot || { x: 0, y: 0 },
   };
 
-  const ptFrameOffset = buffer.readUInt32LE(0x60 + 0x08) + 0x10;
-  const ptFrameLength = buffer.readUInt32LE(0x60 + 0x0c);
-
-  textureDefinition.ptFrame = parseTexFrames(buffer, ptFrameOffset, ptFrameLength);
+  // Convert ptFrame from d4data format to expected format
+  textureDefinition.ptFrame = (data.ptFrame || []).map(frame => ({
+    hImageHandle: frame.hImageHandle,
+    flU0: frame.flU0,
+    flV0: frame.flV0,
+    flU1: frame.flU1,
+    flV1: frame.flV1,
+  }));
 
   return textureDefinition;
-}
-
-function parseTexFrames(buffer, offset, length) {
-  const texFrames = [];
-  let currentOffset = offset;
-  
-  for (let i = 0; i < (length / 0x24); i++) {
-    const texFrame = {
-      hImageHandle: buffer.readUInt32LE(currentOffset),
-      flU0: buffer.readFloatLE(currentOffset + 0x4),
-      flV0: buffer.readFloatLE(currentOffset + 0x8),
-      flU1: buffer.readFloatLE(currentOffset + 0xc),
-      flV1: buffer.readFloatLE(currentOffset + 0x10),
-      // unk_8081ff3: buffer.readFloatLE(currentOffset + 0x14),
-      // unk_8082014: buffer.readFloatLE(currentOffset + 0x18),
-      // unk_8081ff4: buffer.readFloatLE(currentOffset + 0x1c),
-      // unk_8082015: buffer.readFloatLE(currentOffset + 0x20)
-    };
-
-    texFrames.push(texFrame);
-    currentOffset += 0x24; // Move to the next TexFrame
-  }
-  
-  return texFrames;
 }
 
 module.exports = readTextureDefinition;

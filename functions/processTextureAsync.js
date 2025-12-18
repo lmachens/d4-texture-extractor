@@ -12,11 +12,9 @@ const convertRawTexture = require("./convertRawTexture");
 const readTextureDefinition = require("./readTextureDefinition");
 
 async function processTextureAsync(key) {
-  const textureDefinitionFile = path.join(
-    options.textureDataFolder,
-    `${key}.tex`
-  );
-  const data = readTextureDefinition(textureDefinitionFile);
+  // key is the texture name like "2DUIMinimapIcons"
+  // readTextureDefinition expects key + ".tex" to form filename like "2DUIMinimapIcons.tex"
+  const data = readTextureDefinition(`${key}.tex`);
   try {
     await processTextureInternal(key, data);
   } catch (error) {

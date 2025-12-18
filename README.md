@@ -1,8 +1,21 @@
+`node .\index.js -e` (extracts all filters configured in config.js)
+
 # Diablo 4 Texture Extractor
 
 ## What it does
 
 The Diablo 4 Texture Extractor is a tool that extracts and converts .tex files to PNG, WebP, or JPG formats. It can also slice the files into separate image files when applicable.
+
+**Note (Game version 2.5.0+)**: As of game version 2.5.0, Blizzard consolidated texture metadata into a single `Texture-Base-Global.dat` file. The texture extractor now reads texture definitions from **d4data JSON files** (requires d4data repo at `C:\dev\DiabloIV\d4data`). Only payload textures are extracted from CASC.
+
+**Important**: The d4data repository uses different branches for major game versions. Make sure to checkout the correct branch:
+```bash
+cd C:\dev\DiabloIV\d4data
+git fetch origin
+git checkout 2.5    # Use branch matching current game version
+git pull
+```
+Check available branches at: https://github.com/DiabloTools/d4data/branches
 
 ## Known Issues
 
@@ -11,10 +24,9 @@ The Diablo 4 Texture Extractor is a tool that extracts and converts .tex files t
 ## Installation
 
 1. Clone this repository by following the instructions in the [GitHub documentation](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
-2. Download the latest `CASCConsole.zip` from [https://github.com/WoW-Tools/CASCExplorer/releases](https://github.com/WoW-Tools/CASCExplorer/releases). 
+2. Download the latest `CASCConsole.zip` from [https://github.com/WoW-Tools/CASCExplorer/releases](https://github.com/WoW-Tools/CASCExplorer/releases).
 3. Extract the contents of the `CASCConsole.zip` into the `CASCConsole` folder under `d4-texture-extractor` folder. `CASCConsole.exe` and the other files from the zip file should be in the same folder with `extract_cascconsole.exe_and_other_files_here`
 4. Run `npm install` in `d4-texture-extractor` folder. You should have at least latest LTS version of [NodeJS](https://nodejs.org/en) installed.
-
 
 ## Usage
 
@@ -28,12 +40,23 @@ Options:
   -c, --concurrency <number>   number of concurrent tasks
   -o, --outputformat <format>  png, jpg or webp
   -p, --outputpath <path>      Full or relative path to output folder, default is './{outputformat}'
-  -f, --filter <wildcard>      Wildcard to filter files to process, for example '2DUI*', no need to include .json extension, default is '*'
+  -f, --filter <wildcard>      Wildcard to filter files to process, for example '2DUI*', no need to include .json extension (overrides config.js filters)
   -nc, --nocrop                Do not crop images to the size of the texture, useful for map textures
   -ns, --noslice               Do not slice the images, useful for map textures
   -nsf, --noslicefolders       Do not use slice folders, instead save slicers to the output folder, prefixed with the file name
   -h, --help                   display help for command
 ```
+
+### Multiple Filters (config.js)
+
+You can configure multiple filter patterns in `config.js` to extract different texture sets in a single run:
+
+```js
+filters: ["2DUIMinimapIcons*", "zmap*"],
+```
+
+This is useful for extracting both minimap icons and map tiles at once.
+
 You can find the full list of texture file names [here](https://gist.githubusercontent.com/adainrivers/d0de60a2abb6502fc0c0f0c805df4a36/raw/fe2a29aeaa10e1b858c9bf7914f0dd93e2c610a0/TextureNames.txt)
 
 **Example 1:** Extract and convert all texture files starting with 2D into webp folder in webp format.
